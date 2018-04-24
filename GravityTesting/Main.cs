@@ -25,7 +25,6 @@ namespace GravityTesting
         private GameObject _box;
         private Vector2 _acceleration = new Vector2();
 
-        private float _mass = 0.1f;//Ball mass in kg
         private float _radius = 50f;//Ball radius in cm or pixels.
 
         /*This is the amount(constant) of gravitational pull that earth has.
@@ -80,7 +79,9 @@ namespace GravityTesting
             _box = new GameObject()
             {
                 Name = "Box",
-                Position = new Vector2(350, 200)
+                Position = new Vector2(350, 200),
+                Velocity = Vector2.Zero,
+                Mass = 0.1f
             };
 
             _graphics.PreferredBackBufferHeight = _graphics.PreferredBackBufferHeight + 200;
@@ -407,7 +408,7 @@ namespace GravityTesting
 
             //Add the weight force, which only affects the y-direction (because that's the direction gravity is pulling from)
             //https://www.wikihow.com/Calculate-Force-of-Gravity
-            allForces += _mass * _gravity;
+            allForces += _box.Mass * _gravity;
 
             /*Add the air resistance force. This would affect both X and Y directions, but we're only looking at the y-axis in this example.
                 Things to note:
@@ -439,7 +440,7 @@ namespace GravityTesting
              Find the new acceleration of the object in the Y direction by solving for A(Accerlation) by dividing all
              0f the net forces by the mass of the object.  This is one way to find out the acceleration.
              */
-            var newAcceleration = allForces / _mass;
+            var newAcceleration = allForces / _box.Mass;
 
             var averageAcceleration = Util.Average(new[] { newAcceleration, _acceleration });
 
