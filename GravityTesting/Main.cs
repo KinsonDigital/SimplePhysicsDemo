@@ -51,13 +51,23 @@ namespace GravityTesting
             var orangeBox = new GameObject()
             {
                 Name = "OrangeBox",
-                Position = new Vector2(350, 200),
+                Position = new Vector2(250, 200),
                 Velocity = Vector2.Zero,
                 Radius = 50f,
                 Mass = 0.1f
             };
 
+            var purpleBox = new GameObject()
+            {
+                Name = "PurpleBox",
+                Position = new Vector2(450, 200),
+                Velocity = Vector2.Zero,
+                Radius = 100f,
+                Mass = 0.1f
+            };
+
             orangeBox.SurfaceArea = (float)Math.PI * orangeBox.Radius * orangeBox.Radius / 50000f;
+            purpleBox.SurfaceArea = (float)Math.PI * purpleBox.Radius * purpleBox.Radius / 50000f;
 
             _world = new World()
             {
@@ -65,6 +75,7 @@ namespace GravityTesting
             };
 
             _world.AddGameObject(orangeBox);
+            _world.AddGameObject(purpleBox);
 
             _physics.SetWorld(_world);
 
@@ -152,13 +163,16 @@ namespace GravityTesting
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            var box = _world.GetGameObject("OrangeBox");
-
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             _spriteBatch.Begin();
 
-            _spriteBatch.FillRectangle(box.Position, new Vector2(100, 100), Color.Orange);
+            foreach(var obj in _world.GameObjects)
+            {
+                var color = obj.Name == "OrangeBox" ? Color.DarkOrange : Color.MediumPurple;
+
+                _spriteBatch.FillRectangle(obj.Position, new Vector2(obj.Width, obj.Height), color);
+            }
 
             _screenStats.Draw(_spriteBatch);
 

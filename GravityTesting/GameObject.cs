@@ -11,6 +11,22 @@ namespace GravityTesting
     {
         public string Name { get; set; }
 
+        public float Width
+        {
+            get
+            {
+                return Radius * 2;
+            }
+        }
+
+        public float Height
+        {
+            get
+            {
+                return Radius * 2;
+            }
+        }
+
         public Vector2 Position { get; set; }
 
         public Vector2 Velocity { get; set; }
