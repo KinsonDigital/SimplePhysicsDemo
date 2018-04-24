@@ -119,8 +119,6 @@ namespace GravityTesting
         {
             _physics.Update(gameTime);
 
-            CheckCollision();
-
             UpdateStats();
 
             _settingsManager.Update(gameTime);
