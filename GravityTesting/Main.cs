@@ -32,15 +32,6 @@ namespace GravityTesting
 
         private float _fluidDensity = 0f;//Density of air/fluid. Try 1000 for water.
 
-        /* Frontal area of the ball; divided by 10000 to compensate for the 1px = 1cm relation
-           frontal area of the ball is the area of the ball as projected opposite of the direction of motion.
-           In other words, this is the "silhouette" of the ball that is facing the "wind" (since this variable is used for air resistance calculation).
-           It is the total area of the ball that faces the wind. In short: this is the area that the air is pressing on.
-           http://www.softschools.com/formulas/physics/air_resistance_formula/85/
-        */
-        private float _surfaceArea = 0f;
-
-
         #region Constructors
         /// <summary>
         /// Creates a new instance of <see cref="Main"/>.
@@ -75,7 +66,7 @@ namespace GravityTesting
                 Mass = 0.1f
             };
 
-            _surfaceArea = (float)Math.PI * _box.Radius * _box.Radius / 50000f;
+            _box.SurfaceArea = (float)Math.PI * _box.Radius * _box.Radius / 50000f;
 
             _graphics.PreferredBackBufferHeight = _graphics.PreferredBackBufferHeight + 200;
             _graphics.ApplyChanges();
@@ -412,7 +403,7 @@ namespace GravityTesting
                 3. Multiplying _velocityY * _velocityY is the same thing as _velocity^2 which is in the well known equation in the link below
             */
             http://www.softschools.com/formulas/physics/air_resistance_formula/85/
-            allForces += Util.CalculateDragForceOnObject(_fluidDensity, _box.Drag, _surfaceArea, _box.Velocity);
+            allForces += Util.CalculateDragForceOnObject(_fluidDensity, _box.Drag, _box.SurfaceArea, _box.Velocity);
 
             //Clamp the total forces
             allForces = Util.Clamp(allForces, -10f, 10f);

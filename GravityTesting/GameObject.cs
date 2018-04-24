@@ -24,6 +24,15 @@ namespace GravityTesting
         public float Restitution { get; set; }
 
         /// <summary>
+        /// Frontal area of the ball; divided by 10000 to compensate for the 1px = 1cm relation
+        /// frontal area of the ball is the area of the ball as projected opposite of the direction of motion.
+        /// In other words, this is the "silhouette" of the ball that is facing the "wind" (since this variable is used for air resistance calculation).
+        ///   It is the total area of the ball that faces the wind. In short: this is the area that the air is pressing on.
+        /// http://www.softschools.com/formulas/physics/air_resistance_formula/85/
+        /// </summary>
+        public float SurfaceArea { get; set; }
+
+        /// <summary>
         /// Coeffecient of drag for on a object
         /// </summary>
         public float Drag { get; set; }
