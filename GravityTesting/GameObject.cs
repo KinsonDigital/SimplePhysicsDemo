@@ -23,6 +23,11 @@ namespace GravityTesting
         /// </summary>
         public float Restitution { get; set; }
 
+        /// <summary>
+        /// Coeffecient of drag for on a object
+        /// </summary>
+        public float Drag { get; set; }
+
         public float Radius { get; set; }
 
         public float Mass { get; set; }

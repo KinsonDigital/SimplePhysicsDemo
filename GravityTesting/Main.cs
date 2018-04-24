@@ -31,7 +31,6 @@ namespace GravityTesting
         private Vector2 _gravity = new Vector2(0f, 0f);
 
         private float _fluidDensity = 0f;//Density of air/fluid. Try 1000 for water.
-        private float _dragCoeffecient = 0f;//Coeffecient of drag for on a object
 
         /* Frontal area of the ball; divided by 10000 to compensate for the 1px = 1cm relation
            frontal area of the ball is the area of the ball as projected opposite of the direction of motion.
@@ -153,7 +152,7 @@ namespace GravityTesting
             _screenStats.UpdateStat("Gravity", $"X: {Math.Round(_gravity.X, 2)} , Y:{Math.Round(_gravity.Y, 2)}");
             _screenStats.UpdateStat("Velocity", $"X: {velX} , Y:{velY}");
             _screenStats.UpdateStat("Bounciness", $"{_box.Restitution}");
-            _screenStats.UpdateStat("Drag", $"{_dragCoeffecient}");
+            _screenStats.UpdateStat("Drag", $"{_box.Drag}");
             _screenStats.UpdateStat("FluidDensity", $"{_fluidDensity}");
         }
 
@@ -296,7 +295,7 @@ namespace GravityTesting
                     ChangeAmount = 1f,
                     ChangeAction = (float amount) =>
                     {
-                        _dragCoeffecient = (float)Math.Round(_dragCoeffecient + amount, 2);
+                        _box.Drag = (float)Math.Round(_box.Drag + amount, 2);
                     }
                 },
                 new Setting()
@@ -306,7 +305,7 @@ namespace GravityTesting
                     ChangeAmount = 1f,
                     ChangeAction = (float amount) =>
                     {
-                        _dragCoeffecient = (float)Math.Round(_dragCoeffecient - amount, 2);
+                        _box.Drag = (float)Math.Round(_box.Drag - amount, 2);
                     }
                 }
             };
@@ -413,7 +412,7 @@ namespace GravityTesting
                 3. Multiplying _velocityY * _velocityY is the same thing as _velocity^2 which is in the well known equation in the link below
             */
             http://www.softschools.com/formulas/physics/air_resistance_formula/85/
-            allForces += Util.CalculateDragForceOnObject(_fluidDensity, _dragCoeffecient, _surfaceArea, _box.Velocity);
+            allForces += Util.CalculateDragForceOnObject(_fluidDensity, _box.Drag, _surfaceArea, _box.Velocity);
 
             //Clamp the total forces
             allForces = Util.Clamp(allForces, -10f, 10f);
