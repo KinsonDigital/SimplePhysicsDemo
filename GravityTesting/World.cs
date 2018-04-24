@@ -24,6 +24,10 @@ namespace GravityTesting
         /// </summary>
         public float Density { get; set; }
 
+        public int Width { get; set; }
+
+        public int Height { get; set; }
+
         public void SetGravity(float x, float y)
         {
             Gravity = new Vector2(x, y);
