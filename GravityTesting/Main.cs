@@ -22,7 +22,7 @@ namespace GravityTesting
         private int _screenHeight;
         private int _screenWidth;
 
-        private Vector2 _position = new Vector2(350, 200f);
+        private GameObject _box;
         private Vector2 _velocity = new Vector2(0, 0);
         private Vector2 _acceleration = new Vector2();
 
@@ -78,6 +78,12 @@ namespace GravityTesting
         /// </summary>
         protected override void Initialize()
         {
+            _box = new GameObject()
+            {
+                Name = "Box",
+                Position = new Vector2(350, 200)
+            };
+
             _graphics.PreferredBackBufferHeight = _graphics.PreferredBackBufferHeight + 200;
             _graphics.ApplyChanges();
 
@@ -168,7 +174,7 @@ namespace GravityTesting
 
             _spriteBatch.Begin();
 
-            _spriteBatch.FillRectangle(_position, new Vector2(100, 100), Color.Orange);
+            _spriteBatch.FillRectangle(_box.Position, new Vector2(100, 100), Color.Orange);
 
             _screenStats.Draw(_spriteBatch);
 
@@ -428,7 +434,7 @@ namespace GravityTesting
             var predictedDelta = Util.IntegrateVelocityVerlet(_velocity, frameTime, _acceleration);
 
             // The following calculation converts the unit of measure from cm per pixel to meters per pixel
-            _position += predictedDelta * 100f;
+            _box.Position += predictedDelta * 100f;
 
             /*Update the acceleration in the Y direction to take in effect all of the added forces as well as the mass
              Find the new acceleration of the object in the Y direction by solving for A(Accerlation) by dividing all
@@ -450,47 +456,47 @@ namespace GravityTesting
         private void CheckCollision()
         {
             //Let's do very simple collision detection for the left of the screen
-            if (_position.X < 0 && _velocity.X < 0)
+            if (_box.Position.X < 0 && _velocity.X < 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
                 _velocity.X *= _restitutionCoeffecient;
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                _position.X = 0;
+                _box.SetPosition(0, _box.Position.Y);
             }
 
             //Let's do very simple collision detection for the right of the screen
-            if (_position.X + (_radius * 2) > _screenWidth && _velocity.X > 0)
+            if (_box.Position.X + (_radius * 2) > _screenWidth && _velocity.X > 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
                 _velocity.X *= _restitutionCoeffecient;
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                _position.X = _screenWidth - (_radius * 2);
+                _box.SetPosition(_screenWidth - (_radius * 2), _box.Position.Y);
             }
 
             //Let's do very simple collision detection for the top of the screen
-            if (_position.Y < 0 && _velocity.Y < 0)
+            if (_box.Position.Y < 0 && _velocity.Y < 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
                 _velocity.Y *= _restitutionCoeffecient;
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                _position.Y = 0;
+                _box.SetPosition(0, _box.Position.Y);
             }
 
             //Let's do very simple collision detection for the bottom of the screen
-            if (_position.Y + (_radius * 2) > _screenHeight && _velocity.Y > 0)
+            if (_box.Position.Y + (_radius * 2) > _screenHeight && _velocity.Y > 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
                 _velocity.Y *= _restitutionCoeffecient;
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                _position.Y = _screenHeight - (_radius * 2);
+                _box.SetPosition(_screenHeight - (_radius * 2), _box.Position.Y);
             }
         }
         #endregion
