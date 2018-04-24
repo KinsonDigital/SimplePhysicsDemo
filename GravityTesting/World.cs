@@ -19,6 +19,11 @@ namespace GravityTesting
         /// </summary>
         public Vector2 Gravity{ get; set; }
 
+        /// <summary>
+        /// Density of air/fluid. Try 1000 for water.
+        /// </summary>
+        public float Density { get; set; }
+
         public void SetGravity(float x, float y)
         {
             Gravity = new Vector2(x, y);

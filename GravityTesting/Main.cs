@@ -25,8 +25,6 @@ namespace GravityTesting
         private World _world;
         private GameObject _box;
 
-        private float _fluidDensity = 0f;//Density of air/fluid. Try 1000 for water.
-
         #region Constructors
         /// <summary>
         /// Creates a new instance of <see cref="Main"/>.
@@ -144,7 +142,7 @@ namespace GravityTesting
             _screenStats.UpdateStat("Velocity", $"X: {velX} , Y:{velY}");
             _screenStats.UpdateStat("Bounciness", $"{_box.Restitution}");
             _screenStats.UpdateStat("Drag", $"{_box.Drag}");
-            _screenStats.UpdateStat("FluidDensity", $"{_fluidDensity}");
+            _screenStats.UpdateStat("FluidDensity", $"{_world.Density}");
         }
 
 
@@ -312,7 +310,7 @@ namespace GravityTesting
                     ChangeAmount = 1f,
                     ChangeAction = (float amount) =>
                     {
-                        _fluidDensity = (float)Math.Round(_fluidDensity + amount, 2);
+                        _world.Density = (float)Math.Round(_world.Density + amount, 2);
                     }
                 },
                 new Setting()
@@ -322,7 +320,7 @@ namespace GravityTesting
                     ChangeAmount = 1f,
                     ChangeAction = (float amount) =>
                     {
-                        _fluidDensity = (float)Math.Round(_fluidDensity - amount, 2);
+                        _world.Density = (float)Math.Round(_world.Density - amount, 2);
                     }
                 }
             };
@@ -403,7 +401,7 @@ namespace GravityTesting
                 3. Multiplying _velocityY * _velocityY is the same thing as _velocity^2 which is in the well known equation in the link below
             */
             http://www.softschools.com/formulas/physics/air_resistance_formula/85/
-            allForces += Util.CalculateDragForceOnObject(_fluidDensity, _box.Drag, _box.SurfaceArea, _box.Velocity);
+            allForces += Util.CalculateDragForceOnObject(_world.Density, _box.Drag, _box.SurfaceArea, _box.Velocity);
 
             //Clamp the total forces
             allForces = Util.Clamp(allForces, -10f, 10f);
