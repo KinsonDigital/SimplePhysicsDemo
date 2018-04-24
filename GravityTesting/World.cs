@@ -12,6 +12,10 @@ namespace GravityTesting
     /// </summary>
     public class World
     {
+        private List<GameObject> _gameObjects = new List<GameObject>();
+
+        public List<GameObject> GameObjects => _gameObjects;
+
         /// <summary>
         /// This is the amount(constant) of gravitational pull that earth has.
         /// This number represents the rate that objects accelerate towards earth at
@@ -31,6 +35,22 @@ namespace GravityTesting
         public void SetGravity(float x, float y)
         {
             Gravity = new Vector2(x, y);
+        }
+
+        public void AddGameObject(GameObject obj)
+        {
+            _gameObjects.Add(obj);
+        }
+
+        public GameObject GetGameObject(string name)
+        {
+            for (int i = 0; i < _gameObjects.Count; i++)
+            {
+                if(_gameObjects[i].Name == name)
+                    return _gameObjects[i];
+            }
+
+            return null;
         }
     }
 }
