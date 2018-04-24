@@ -48,23 +48,23 @@ namespace GravityTesting
         /// </summary>
         protected override void Initialize()
         {
-            var box = new GameObject()
+            var orangeBox = new GameObject()
             {
-                Name = "Box",
+                Name = "OrangeBox",
                 Position = new Vector2(350, 200),
                 Velocity = Vector2.Zero,
                 Radius = 50f,
                 Mass = 0.1f
             };
 
-            box.SurfaceArea = (float)Math.PI * box.Radius * box.Radius / 50000f;
+            orangeBox.SurfaceArea = (float)Math.PI * orangeBox.Radius * orangeBox.Radius / 50000f;
 
             _world = new World()
             {
                 Gravity = Vector2.Zero
             };
 
-            _world.AddGameObject(box);
+            _world.AddGameObject(orangeBox);
 
             _physics.SetWorld(_world);
 
@@ -132,7 +132,7 @@ namespace GravityTesting
         /// </summary>
         private void UpdateStats()
         {
-            var box = _world.GetGameObject("Box");
+            var box = _world.GetGameObject("OrangeBox");
 
             //If the velocity is infinity, just set text to N/A
             var velX = float.IsInfinity(box.Velocity.X) ? "Inf" : Math.Round(box.Velocity.X, 2).ToString();
@@ -152,7 +152,7 @@ namespace GravityTesting
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            var box = _world.GetGameObject("Box");
+            var box = _world.GetGameObject("OrangeBox");
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
 

@@ -25,7 +25,7 @@ namespace GravityTesting
 
         private void UpdatePhysics(GameTime gameTime)
         {
-            var box = _world.GetGameObject("Box");
+            var box = _world.GetGameObject("OrangeBox");
 
             var allForces = new Vector2();//Total forces.  Gravity + air/fluid drag + etc....
 
@@ -77,7 +77,10 @@ namespace GravityTesting
         /// </summary>
         private void CheckCollision()
         {
-            var box = _world.GetGameObject("Box");
+            var box = _world.GetGameObject("OrangeBox");
+
+            if (box == null)
+                return;
 
             //Let's do very simple collision detection for the left of the screen
             if (box.Position.X < 0 && box.Velocity.X < 0)
