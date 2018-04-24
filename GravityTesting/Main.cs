@@ -23,7 +23,6 @@ namespace GravityTesting
         private int _screenWidth;
 
         private GameObject _box;
-        private Vector2 _acceleration = new Vector2();
 
         private float _radius = 50f;//Ball radius in cm or pixels.
 
@@ -431,7 +430,7 @@ namespace GravityTesting
              * Refer to C++ code sample and the velocity_verlet() function
              *      https://leios.gitbooks.io/algorithm-archive/content/chapters/physics_solvers/verlet/verlet.html
             */
-            var predictedDelta = Util.IntegrateVelocityVerlet(_box.Velocity, frameTime, _acceleration);
+            var predictedDelta = Util.IntegrateVelocityVerlet(_box.Velocity, frameTime, _box.Acceleration);
 
             // The following calculation converts the unit of measure from cm per pixel to meters per pixel
             _box.Position += predictedDelta * 100f;
@@ -442,7 +441,7 @@ namespace GravityTesting
              */
             var newAcceleration = allForces / _box.Mass;
 
-            var averageAcceleration = Util.Average(new[] { newAcceleration, _acceleration });
+            var averageAcceleration = Util.Average(new[] { newAcceleration, _box.Acceleration });
 
             _box.Velocity += averageAcceleration * frameTime;
 

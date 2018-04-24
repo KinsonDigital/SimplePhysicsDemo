@@ -15,6 +15,8 @@ namespace GravityTesting
 
         public Vector2 Velocity { get; set; }
 
+        public Vector2 Acceleration { get; set; }
+        
         public float Mass { get; set; }
 
         public void SetPosition(float x, float y)
