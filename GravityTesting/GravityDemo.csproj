@@ -42,6 +42,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ChangeSettingEventArgs.cs" />
+    <Compile Include="GameObject.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="Primitives2D.cs" />
     <Compile Include="Program.cs" />
