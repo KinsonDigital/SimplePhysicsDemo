@@ -22,13 +22,8 @@ namespace GravityTesting
         private int _screenHeight;
         private int _screenWidth;
 
+        private World _world;
         private GameObject _box;
-
-        /*This is the amount(constant) of gravitational pull that earth has.
-          This number represents the rate that objects accelerate towards earth at 
-          a rate of 9.807 m/s^2(meters/second squared) due to the force of gravity.
-         */
-        private Vector2 _gravity = new Vector2(0f, 0f);
 
         private float _fluidDensity = 0f;//Density of air/fluid. Try 1000 for water.
 
@@ -57,6 +52,11 @@ namespace GravityTesting
         /// </summary>
         protected override void Initialize()
         {
+            _world = new World()
+            {
+                Gravity = Vector2.Zero
+            };
+
             _box = new GameObject()
             {
                 Name = "Box",
@@ -140,7 +140,7 @@ namespace GravityTesting
             var velX = float.IsInfinity(_box.Velocity.X) ? "Inf" : Math.Round(_box.Velocity.X, 2).ToString();
             var velY = float.IsInfinity(_box.Velocity.Y) ? "Inf" : Math.Round(_box.Velocity.Y, 2).ToString();
 
-            _screenStats.UpdateStat("Gravity", $"X: {Math.Round(_gravity.X, 2)} , Y:{Math.Round(_gravity.Y, 2)}");
+            _screenStats.UpdateStat("Gravity", $"X: {Math.Round(_world.Gravity.X, 2)} , Y:{Math.Round(_world.Gravity.Y, 2)}");
             _screenStats.UpdateStat("Velocity", $"X: {velX} , Y:{velY}");
             _screenStats.UpdateStat("Bounciness", $"{_box.Restitution}");
             _screenStats.UpdateStat("Drag", $"{_box.Drag}");
@@ -214,7 +214,7 @@ namespace GravityTesting
                     ChangeAmount = 1,
                     ChangeAction = (float amount) =>
                     {
-                        _gravity.X += amount;
+                        _world.SetGravity(_world.Gravity.X + amount, _world.Gravity.Y);
                     }
                 },
                 new Setting()
@@ -224,7 +224,7 @@ namespace GravityTesting
                     ChangeAmount = 1,
                     ChangeAction = (float amount) =>
                     {
-                        _gravity.X -= amount;
+                        _world.SetGravity(_world.Gravity.X - amount, _world.Gravity.Y);
                     }
                 },
                 new Setting()
@@ -234,7 +234,7 @@ namespace GravityTesting
                     ChangeAmount = 1,
                     ChangeAction = (float amount) =>
                     {
-                        _gravity.Y += amount;
+                        _world.SetGravity(_world.Gravity.X, _world.Gravity.Y + amount);
                     }
                 },
                 new Setting()
@@ -244,7 +244,7 @@ namespace GravityTesting
                     ChangeAmount = 1,
                     ChangeAction = (float amount) =>
                     {
-                        _gravity.Y -= amount;
+                        _world.SetGravity(_world.Gravity.X, _world.Gravity.Y - amount);
                     }
                 }
             };
@@ -392,7 +392,7 @@ namespace GravityTesting
 
             //Add the weight force, which only affects the y-direction (because that's the direction gravity is pulling from)
             //https://www.wikihow.com/Calculate-Force-of-Gravity
-            allForces += _box.Mass * _gravity;
+            allForces += _box.Mass * _world.Gravity;
 
             /*Add the air resistance force. This would affect both X and Y directions, but we're only looking at the y-axis in this example.
                 Things to note:
