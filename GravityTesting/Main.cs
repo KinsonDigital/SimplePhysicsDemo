@@ -24,8 +24,6 @@ namespace GravityTesting
 
         private GameObject _box;
 
-        private float _radius = 50f;//Ball radius in cm or pixels.
-
         /*This is the amount(constant) of gravitational pull that earth has.
           This number represents the rate that objects accelerate towards earth at 
           a rate of 9.807 m/s^2(meters/second squared) due to the force of gravity.
@@ -59,7 +57,6 @@ namespace GravityTesting
             IsFixedTimeStep = false;
             IsMouseVisible = true;
 
-            _surfaceArea = (float)Math.PI * _radius * _radius / 50000f;
             _graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
         }
@@ -80,8 +77,11 @@ namespace GravityTesting
                 Name = "Box",
                 Position = new Vector2(350, 200),
                 Velocity = Vector2.Zero,
+                Radius = 50f,
                 Mass = 0.1f
             };
+
+            _surfaceArea = (float)Math.PI * _box.Radius * _box.Radius / 50000f;
 
             _graphics.PreferredBackBufferHeight = _graphics.PreferredBackBufferHeight + 200;
             _graphics.ApplyChanges();
@@ -466,14 +466,14 @@ namespace GravityTesting
             }
 
             //Let's do very simple collision detection for the right of the screen
-            if (_box.Position.X + (_radius * 2) > _screenWidth && _box.Velocity.X > 0)
+            if (_box.Position.X + (_box.Radius * 2) > _screenWidth && _box.Velocity.X > 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
                 _box.SetVelocity(_box.Velocity.X * _restitutionCoeffecient, _box.Velocity.Y);
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                _box.SetPosition(_screenWidth - (_radius * 2), _box.Position.Y);
+                _box.SetPosition(_screenWidth - (_box.Radius * 2), _box.Position.Y);
             }
 
             //Let's do very simple collision detection for the top of the screen
@@ -488,14 +488,14 @@ namespace GravityTesting
             }
 
             //Let's do very simple collision detection for the bottom of the screen
-            if (_box.Position.Y + (_radius * 2) > _screenHeight && _box.Velocity.Y > 0)
+            if (_box.Position.Y + (_box.Radius * 2) > _screenHeight && _box.Velocity.Y > 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
                 _box.SetVelocity(_box.Velocity.X, _box.Velocity.Y * _restitutionCoeffecient);
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                _box.SetPosition(_box.Position.X, _screenHeight - (_radius * 2));
+                _box.SetPosition(_box.Position.X, _screenHeight - (_box.Radius * 2));
             }
         }
         #endregion
