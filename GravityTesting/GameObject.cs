@@ -17,6 +17,12 @@ namespace GravityTesting
 
         public Vector2 Acceleration { get; set; }
 
+        /// <summary>
+        /// Coefficient of restitution ("bounciness"). Needs to be a negative number for flipping the direction of travel (velocity Y) to move the ball 
+        /// in the opposition direction when it hits a surface.This is what simulates the bouncing effect of an object hitting another object.
+        /// </summary>
+        public float Restitution { get; set; }
+
         public float Radius { get; set; }
 
         public float Mass { get; set; }

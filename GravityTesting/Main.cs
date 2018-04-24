@@ -30,11 +30,6 @@ namespace GravityTesting
          */
         private Vector2 _gravity = new Vector2(0f, 0f);
 
-        /* Coefficient of restitution ("bounciness"). Needs to be a negative number for flipping the direction of travel (velocity Y) to move the ball 
-           in the opposition direction when it hits a surface. This is what simulates the bouncing effect of an object hitting another object.
-        */
-        private float _restitutionCoeffecient = 0f;
-
         private float _fluidDensity = 0f;//Density of air/fluid. Try 1000 for water.
         private float _dragCoeffecient = 0f;//Coeffecient of drag for on a object
 
@@ -157,7 +152,7 @@ namespace GravityTesting
 
             _screenStats.UpdateStat("Gravity", $"X: {Math.Round(_gravity.X, 2)} , Y:{Math.Round(_gravity.Y, 2)}");
             _screenStats.UpdateStat("Velocity", $"X: {velX} , Y:{velY}");
-            _screenStats.UpdateStat("Bounciness", $"{_restitutionCoeffecient}");
+            _screenStats.UpdateStat("Bounciness", $"{_box.Restitution}");
             _screenStats.UpdateStat("Drag", $"{_dragCoeffecient}");
             _screenStats.UpdateStat("FluidDensity", $"{_fluidDensity}");
         }
@@ -275,7 +270,7 @@ namespace GravityTesting
                     ChangeAmount = 0.01f,
                     ChangeAction = (float amount) =>
                     {
-                        _restitutionCoeffecient = (float)Math.Round(_restitutionCoeffecient + amount, 2);
+                        _box.Restitution = (float)Math.Round(_box.Restitution + amount, 2);
                     }
                 },
                 new Setting()
@@ -285,7 +280,7 @@ namespace GravityTesting
                     ChangeAmount = 0.01f,
                     ChangeAction = (float amount) =>
                     {
-                        _restitutionCoeffecient = (float)Math.Round(_restitutionCoeffecient - amount, 2);
+                        _box.Restitution = (float)Math.Round(_box.Restitution - amount, 2);
                     }
                 },
             };
@@ -458,7 +453,7 @@ namespace GravityTesting
             if (_box.Position.X < 0 && _box.Velocity.X < 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
-                _box.SetVelocity(_box.Velocity.X * _restitutionCoeffecient, _box.Velocity.Y);
+                _box.SetVelocity(_box.Velocity.X * _box.Restitution, _box.Velocity.Y);
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
@@ -469,7 +464,7 @@ namespace GravityTesting
             if (_box.Position.X + (_box.Radius * 2) > _screenWidth && _box.Velocity.X > 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
-                _box.SetVelocity(_box.Velocity.X * _restitutionCoeffecient, _box.Velocity.Y);
+                _box.SetVelocity(_box.Velocity.X * _box.Restitution, _box.Velocity.Y);
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
@@ -480,7 +475,7 @@ namespace GravityTesting
             if (_box.Position.Y < 0 && _box.Velocity.Y < 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
-                _box.SetVelocity(_box.Velocity.X, _box.Velocity.Y * _restitutionCoeffecient);
+                _box.SetVelocity(_box.Velocity.X, _box.Velocity.Y * _box.Restitution);
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
@@ -491,7 +486,7 @@ namespace GravityTesting
             if (_box.Position.Y + (_box.Radius * 2) > _screenHeight && _box.Velocity.Y > 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
-                _box.SetVelocity(_box.Velocity.X, _box.Velocity.Y * _restitutionCoeffecient);
+                _box.SetVelocity(_box.Velocity.X, _box.Velocity.Y * _box.Restitution);
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
