@@ -52,6 +52,7 @@
     <Compile Include="SettingManager.cs" />
     <Compile Include="StatText.cs" />
     <Compile Include="Util.cs" />
+    <Compile Include="World.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">

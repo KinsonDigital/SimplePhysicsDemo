@@ -19,18 +19,9 @@ namespace GravityTesting
         private ScreenStats _screenStats;
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
-        private int _screenHeight;
-        private int _screenWidth;
 
+        private World _world;
         private GameObject _box;
-
-        /*This is the amount(constant) of gravitational pull that earth has.
-          This number represents the rate that objects accelerate towards earth at 
-          a rate of 9.807 m/s^2(meters/second squared) due to the force of gravity.
-         */
-        private Vector2 _gravity = new Vector2(0f, 0f);
-
-        private float _fluidDensity = 0f;//Density of air/fluid. Try 1000 for water.
 
         #region Constructors
         /// <summary>
@@ -57,6 +48,11 @@ namespace GravityTesting
         /// </summary>
         protected override void Initialize()
         {
+            _world = new World()
+            {
+                Gravity = Vector2.Zero
+            };
+
             _box = new GameObject()
             {
                 Name = "Box",
@@ -71,8 +67,8 @@ namespace GravityTesting
             _graphics.PreferredBackBufferHeight = _graphics.PreferredBackBufferHeight + 200;
             _graphics.ApplyChanges();
 
-            _screenHeight = _graphics.PreferredBackBufferHeight;
-            _screenWidth = _graphics.PreferredBackBufferWidth;
+            _world.Width = _graphics.PreferredBackBufferWidth;
+            _world.Height = _graphics.PreferredBackBufferHeight;
 
             var screenCenterX = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width / 2;
             var screenCenterY = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height / 2;
@@ -140,11 +136,11 @@ namespace GravityTesting
             var velX = float.IsInfinity(_box.Velocity.X) ? "Inf" : Math.Round(_box.Velocity.X, 2).ToString();
             var velY = float.IsInfinity(_box.Velocity.Y) ? "Inf" : Math.Round(_box.Velocity.Y, 2).ToString();
 
-            _screenStats.UpdateStat("Gravity", $"X: {Math.Round(_gravity.X, 2)} , Y:{Math.Round(_gravity.Y, 2)}");
+            _screenStats.UpdateStat("Gravity", $"X: {Math.Round(_world.Gravity.X, 2)} , Y:{Math.Round(_world.Gravity.Y, 2)}");
             _screenStats.UpdateStat("Velocity", $"X: {velX} , Y:{velY}");
             _screenStats.UpdateStat("Bounciness", $"{_box.Restitution}");
             _screenStats.UpdateStat("Drag", $"{_box.Drag}");
-            _screenStats.UpdateStat("FluidDensity", $"{_fluidDensity}");
+            _screenStats.UpdateStat("FluidDensity", $"{_world.Density}");
         }
 
 
@@ -214,7 +210,7 @@ namespace GravityTesting
                     ChangeAmount = 1,
                     ChangeAction = (float amount) =>
                     {
-                        _gravity.X += amount;
+                        _world.SetGravity(_world.Gravity.X + amount, _world.Gravity.Y);
                     }
                 },
                 new Setting()
@@ -224,7 +220,7 @@ namespace GravityTesting
                     ChangeAmount = 1,
                     ChangeAction = (float amount) =>
                     {
-                        _gravity.X -= amount;
+                        _world.SetGravity(_world.Gravity.X - amount, _world.Gravity.Y);
                     }
                 },
                 new Setting()
@@ -234,7 +230,7 @@ namespace GravityTesting
                     ChangeAmount = 1,
                     ChangeAction = (float amount) =>
                     {
-                        _gravity.Y += amount;
+                        _world.SetGravity(_world.Gravity.X, _world.Gravity.Y + amount);
                     }
                 },
                 new Setting()
@@ -244,7 +240,7 @@ namespace GravityTesting
                     ChangeAmount = 1,
                     ChangeAction = (float amount) =>
                     {
-                        _gravity.Y -= amount;
+                        _world.SetGravity(_world.Gravity.X, _world.Gravity.Y - amount);
                     }
                 }
             };
@@ -312,7 +308,7 @@ namespace GravityTesting
                     ChangeAmount = 1f,
                     ChangeAction = (float amount) =>
                     {
-                        _fluidDensity = (float)Math.Round(_fluidDensity + amount, 2);
+                        _world.Density = (float)Math.Round(_world.Density + amount, 2);
                     }
                 },
                 new Setting()
@@ -322,7 +318,7 @@ namespace GravityTesting
                     ChangeAmount = 1f,
                     ChangeAction = (float amount) =>
                     {
-                        _fluidDensity = (float)Math.Round(_fluidDensity - amount, 2);
+                        _world.Density = (float)Math.Round(_world.Density - amount, 2);
                     }
                 }
             };
@@ -377,7 +373,7 @@ namespace GravityTesting
                 Name = "Velocity",
                 Text = "X: 0, Y: 0",
                 Forecolor = Color.Black,
-                Position = new Vector2(0, _screenHeight - 25)
+                Position = new Vector2(0, _world.Height - 25)
             });
         }
 
@@ -392,7 +388,7 @@ namespace GravityTesting
 
             //Add the weight force, which only affects the y-direction (because that's the direction gravity is pulling from)
             //https://www.wikihow.com/Calculate-Force-of-Gravity
-            allForces += _box.Mass * _gravity;
+            allForces += _box.Mass * _world.Gravity;
 
             /*Add the air resistance force. This would affect both X and Y directions, but we're only looking at the y-axis in this example.
                 Things to note:
@@ -403,7 +399,7 @@ namespace GravityTesting
                 3. Multiplying _velocityY * _velocityY is the same thing as _velocity^2 which is in the well known equation in the link below
             */
             http://www.softschools.com/formulas/physics/air_resistance_formula/85/
-            allForces += Util.CalculateDragForceOnObject(_fluidDensity, _box.Drag, _box.SurfaceArea, _box.Velocity);
+            allForces += Util.CalculateDragForceOnObject(_world.Density, _box.Drag, _box.SurfaceArea, _box.Velocity);
 
             //Clamp the total forces
             allForces = Util.Clamp(allForces, -10f, 10f);
@@ -451,14 +447,14 @@ namespace GravityTesting
             }
 
             //Let's do very simple collision detection for the right of the screen
-            if (_box.Position.X + (_box.Radius * 2) > _screenWidth && _box.Velocity.X > 0)
+            if (_box.Position.X + (_box.Radius * 2) > _world.Width && _box.Velocity.X > 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
                 _box.SetVelocity(_box.Velocity.X * _box.Restitution, _box.Velocity.Y);
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                _box.SetPosition(_screenWidth - (_box.Radius * 2), _box.Position.Y);
+                _box.SetPosition(_world.Width - (_box.Radius * 2), _box.Position.Y);
             }
 
             //Let's do very simple collision detection for the top of the screen
@@ -473,14 +469,14 @@ namespace GravityTesting
             }
 
             //Let's do very simple collision detection for the bottom of the screen
-            if (_box.Position.Y + (_box.Radius * 2) > _screenHeight && _box.Velocity.Y > 0)
+            if (_box.Position.Y + (_box.Radius * 2) > _world.Height && _box.Velocity.Y > 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
                 _box.SetVelocity(_box.Velocity.X, _box.Velocity.Y * _box.Restitution);
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                _box.SetPosition(_box.Position.X, _screenHeight - (_box.Radius * 2));
+                _box.SetPosition(_box.Position.X, _world.Height - (_box.Radius * 2));
             }
         }
         #endregion
