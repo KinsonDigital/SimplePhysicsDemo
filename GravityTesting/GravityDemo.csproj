@@ -44,6 +44,7 @@
     <Compile Include="ChangeSettingEventArgs.cs" />
     <Compile Include="GameObject.cs" />
     <Compile Include="Main.cs" />
+    <Compile Include="PhysicsEngine.cs" />
     <Compile Include="Primitives2D.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
