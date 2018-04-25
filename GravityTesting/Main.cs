@@ -21,7 +21,7 @@ namespace GravityTesting
         private SpriteBatch _spriteBatch;
 
         private World _world;
-        private GameObject _box;
+        private PhysicsEngine _physics = new PhysicsEngine();
 
         #region Constructors
         /// <summary>
@@ -48,21 +48,36 @@ namespace GravityTesting
         /// </summary>
         protected override void Initialize()
         {
-            _world = new World()
+            var orangeBox = new GameObject()
             {
-                Gravity = Vector2.Zero
-            };
-
-            _box = new GameObject()
-            {
-                Name = "Box",
-                Position = new Vector2(350, 200),
+                Name = "OrangeBox",
+                Position = new Vector2(250, 200),
                 Velocity = Vector2.Zero,
                 Radius = 50f,
                 Mass = 0.1f
             };
 
-            _box.SurfaceArea = (float)Math.PI * _box.Radius * _box.Radius / 50000f;
+            var purpleBox = new GameObject()
+            {
+                Name = "PurpleBox",
+                Position = new Vector2(450, 200),
+                Velocity = Vector2.Zero,
+                Radius = 100f,
+                Mass = 0.1f
+            };
+
+            orangeBox.SurfaceArea = (float)Math.PI * orangeBox.Radius * orangeBox.Radius / 50000f;
+            purpleBox.SurfaceArea = (float)Math.PI * purpleBox.Radius * purpleBox.Radius / 50000f;
+
+            _world = new World()
+            {
+                Gravity = Vector2.Zero
+            };
+
+            _world.AddGameObject(orangeBox);
+            _world.AddGameObject(purpleBox);
+
+            _physics.SetWorld(_world);
 
             _graphics.PreferredBackBufferHeight = _graphics.PreferredBackBufferHeight + 200;
             _graphics.ApplyChanges();
@@ -113,11 +128,7 @@ namespace GravityTesting
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            var frameTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-
-            UpdatePhysics(frameTime);
-
-            CheckCollision();
+            _physics.Update(gameTime);
 
             UpdateStats();
 
@@ -132,14 +143,16 @@ namespace GravityTesting
         /// </summary>
         private void UpdateStats()
         {
+            var box = _world.GetGameObject("OrangeBox");
+
             //If the velocity is infinity, just set text to N/A
-            var velX = float.IsInfinity(_box.Velocity.X) ? "Inf" : Math.Round(_box.Velocity.X, 2).ToString();
-            var velY = float.IsInfinity(_box.Velocity.Y) ? "Inf" : Math.Round(_box.Velocity.Y, 2).ToString();
+            var velX = float.IsInfinity(box.Velocity.X) ? "Inf" : Math.Round(box.Velocity.X, 2).ToString();
+            var velY = float.IsInfinity(box.Velocity.Y) ? "Inf" : Math.Round(box.Velocity.Y, 2).ToString();
 
             _screenStats.UpdateStat("Gravity", $"X: {Math.Round(_world.Gravity.X, 2)} , Y:{Math.Round(_world.Gravity.Y, 2)}");
             _screenStats.UpdateStat("Velocity", $"X: {velX} , Y:{velY}");
-            _screenStats.UpdateStat("Bounciness", $"{_box.Restitution}");
-            _screenStats.UpdateStat("Drag", $"{_box.Drag}");
+            _screenStats.UpdateStat("Bounciness", $"{box.Restitution}");
+            _screenStats.UpdateStat("Drag", $"{box.Drag}");
             _screenStats.UpdateStat("FluidDensity", $"{_world.Density}");
         }
 
@@ -154,7 +167,12 @@ namespace GravityTesting
 
             _spriteBatch.Begin();
 
-            _spriteBatch.FillRectangle(_box.Position, new Vector2(100, 100), Color.Orange);
+            foreach(var obj in _world.GameObjects)
+            {
+                var color = obj.Name == "OrangeBox" ? Color.DarkOrange : Color.MediumPurple;
+
+                _spriteBatch.FillRectangle(obj.Position, new Vector2(obj.Width, obj.Height), color);
+            }
 
             _screenStats.Draw(_spriteBatch);
 
@@ -197,6 +215,8 @@ namespace GravityTesting
         /// </summary>
         private void AddSettings()
         {
+            var box = _world.GetGameObject("Box");
+
             _settingsManager = new SettingsManager(Keys.End, Keys.Home);
             _settingsManager.OnNextSetting += _settingsManager_OnNextSetting;
             _settingsManager.OnPreviousSetting += _settingsManager_OnPreviousSetting;
@@ -256,7 +276,7 @@ namespace GravityTesting
                     ChangeAmount = 0.01f,
                     ChangeAction = (float amount) =>
                     {
-                        _box.Restitution = (float)Math.Round(_box.Restitution + amount, 2);
+                        box.Restitution = (float)Math.Round(box.Restitution + amount, 2);
                     }
                 },
                 new Setting()
@@ -266,7 +286,7 @@ namespace GravityTesting
                     ChangeAmount = 0.01f,
                     ChangeAction = (float amount) =>
                     {
-                        _box.Restitution = (float)Math.Round(_box.Restitution - amount, 2);
+                        box.Restitution = (float)Math.Round(box.Restitution - amount, 2);
                     }
                 },
             };
@@ -282,7 +302,7 @@ namespace GravityTesting
                     ChangeAmount = 1f,
                     ChangeAction = (float amount) =>
                     {
-                        _box.Drag = (float)Math.Round(_box.Drag + amount, 2);
+                        box.Drag = (float)Math.Round(box.Drag + amount, 2);
                     }
                 },
                 new Setting()
@@ -292,7 +312,7 @@ namespace GravityTesting
                     ChangeAmount = 1f,
                     ChangeAction = (float amount) =>
                     {
-                        _box.Drag = (float)Math.Round(_box.Drag - amount, 2);
+                        box.Drag = (float)Math.Round(box.Drag - amount, 2);
                     }
                 }
             };
@@ -379,104 +399,54 @@ namespace GravityTesting
 
 
         /// <summary>
-        /// Updates the physics using the given <paramref name="frameTime"/>.
-        /// </summary>
-        /// <param name="frameTime">The time in seconds since the last frame.</param>
-        private void UpdatePhysics(float frameTime)
-        {
-            var allForces = new Vector2();//Total forces.  Gravity + air/fluid drag + etc....
-
-            //Add the weight force, which only affects the y-direction (because that's the direction gravity is pulling from)
-            //https://www.wikihow.com/Calculate-Force-of-Gravity
-            allForces += _box.Mass * _world.Gravity;
-
-            /*Add the air resistance force. This would affect both X and Y directions, but we're only looking at the y-axis in this example.
-                Things to note:
-                1. Multiplying 0.5 is the same as dividing by 2.  The original well known equation in the link below divides by 2 instead of \
-                   multiplying by 0.5.
-                2. Mutiplying the -1 constant is to represent the opposite direction that the wind is traveling compared to the direction 
-                   the object is traveling
-                3. Multiplying _velocityY * _velocityY is the same thing as _velocity^2 which is in the well known equation in the link below
-            */
-            http://www.softschools.com/formulas/physics/air_resistance_formula/85/
-            allForces += Util.CalculateDragForceOnObject(_world.Density, _box.Drag, _box.SurfaceArea, _box.Velocity);
-
-            //Clamp the total forces
-            allForces = Util.Clamp(allForces, -10f, 10f);
-
-            /* Verlet integration for the y-direction
-             * This is the amount the ball will be moving in this frame based on the ball's current velocity and acceleration. 
-             * Part 1: https://www.youtube.com/watch?v=3HjO_RGIjCU
-             * Part 2: https://www.youtube.com/watch?v=pBMivz4rIJY
-             * Refer to C++ code sample and the velocity_verlet() function
-             *      https://leios.gitbooks.io/algorithm-archive/content/chapters/physics_solvers/verlet/verlet.html
-            */
-            var predictedDelta = Util.IntegrateVelocityVerlet(_box.Velocity, frameTime, _box.Acceleration);
-
-            // The following calculation converts the unit of measure from cm per pixel to meters per pixel
-            _box.Position += predictedDelta * 100f;
-
-            /*Update the acceleration in the Y direction to take in effect all of the added forces as well as the mass
-             Find the new acceleration of the object in the Y direction by solving for A(Accerlation) by dividing all
-             0f the net forces by the mass of the object.  This is one way to find out the acceleration.
-             */
-            var newAcceleration = allForces / _box.Mass;
-
-            var averageAcceleration = Util.Average(new[] { newAcceleration, _box.Acceleration });
-
-            _box.Velocity += averageAcceleration * frameTime;
-
-            _box.Velocity = Util.Clamp(_box.Velocity, -2f, 2f);
-        }
-
-
-        /// <summary>
         /// Checks collision with the edges of the screen.
         /// </summary>
         private void CheckCollision()
         {
+            var box = _world.GetGameObject("Box");
+
             //Let's do very simple collision detection for the left of the screen
-            if (_box.Position.X < 0 && _box.Velocity.X < 0)
+            if (box.Position.X < 0 && box.Velocity.X < 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
-                _box.SetVelocity(_box.Velocity.X * _box.Restitution, _box.Velocity.Y);
+                box.SetVelocity(box.Velocity.X * box.Restitution, box.Velocity.Y);
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                _box.SetPosition(0, _box.Position.Y);
+                box.SetPosition(0, box.Position.Y);
             }
 
             //Let's do very simple collision detection for the right of the screen
-            if (_box.Position.X + (_box.Radius * 2) > _world.Width && _box.Velocity.X > 0)
+            if (box.Position.X + (box.Radius * 2) > _world.Width && box.Velocity.X > 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
-                _box.SetVelocity(_box.Velocity.X * _box.Restitution, _box.Velocity.Y);
+                box.SetVelocity(box.Velocity.X * box.Restitution, box.Velocity.Y);
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                _box.SetPosition(_world.Width - (_box.Radius * 2), _box.Position.Y);
+                box.SetPosition(_world.Width - (box.Radius * 2), box.Position.Y);
             }
 
             //Let's do very simple collision detection for the top of the screen
-            if (_box.Position.Y < 0 && _box.Velocity.Y < 0)
+            if (box.Position.Y < 0 && box.Velocity.Y < 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
-                _box.SetVelocity(_box.Velocity.X, _box.Velocity.Y * _box.Restitution);
+                box.SetVelocity(box.Velocity.X, box.Velocity.Y * box.Restitution);
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                _box.SetPosition(_box.Position.X, _box.Position.Y);
+                box.SetPosition(box.Position.X, box.Position.Y);
             }
 
             //Let's do very simple collision detection for the bottom of the screen
-            if (_box.Position.Y + (_box.Radius * 2) > _world.Height && _box.Velocity.Y > 0)
+            if (box.Position.Y + (box.Radius * 2) > _world.Height && box.Velocity.Y > 0)
             {
                 // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
-                _box.SetVelocity(_box.Velocity.X, _box.Velocity.Y * _box.Restitution);
+                box.SetVelocity(box.Velocity.X, box.Velocity.Y * box.Restitution);
 
                 // Move the ball back a little bit so it's not still "stuck" in the wall
                 //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                _box.SetPosition(_box.Position.X, _world.Height - (_box.Radius * 2));
+                box.SetPosition(box.Position.X, _world.Height - (box.Radius * 2));
             }
         }
         #endregion
