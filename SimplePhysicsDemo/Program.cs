@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GravityTesting
+namespace SimplePhysicsDemo
 {
 #if WINDOWS || LINUX
     /// <summary>

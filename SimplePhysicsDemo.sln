@@ -3,9 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27428.2037
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GravityDemo", "GravityTesting\GravityDemo.csproj", "{6415089A-5BF4-41B6-9503-89E086E9A37A}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GravityDemoTesting", "GravityDemoTesting\GravityDemoTesting.csproj", "{787F6CFE-68FF-475E-A49F-D3F3171A678F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimplePhysicsDemo", "SimplePhysicsDemo\SimplePhysicsDemo.csproj", "{6415089A-5BF4-41B6-9503-89E086E9A37A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +15,6 @@ Global
 		{6415089A-5BF4-41B6-9503-89E086E9A37A}.Debug|x86.Build.0 = Debug|x86
 		{6415089A-5BF4-41B6-9503-89E086E9A37A}.Release|x86.ActiveCfg = Release|x86
 		{6415089A-5BF4-41B6-9503-89E086E9A37A}.Release|x86.Build.0 = Release|x86
-		{787F6CFE-68FF-475E-A49F-D3F3171A678F}.Debug|x86.ActiveCfg = Debug|x86
-		{787F6CFE-68FF-475E-A49F-D3F3171A678F}.Debug|x86.Build.0 = Debug|x86
-		{787F6CFE-68FF-475E-A49F-D3F3171A678F}.Release|x86.ActiveCfg = Release|x86
-		{787F6CFE-68FF-475E-A49F-D3F3171A678F}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

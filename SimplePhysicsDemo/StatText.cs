@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace GravityTesting
+namespace SimplePhysicsDemo
 {
     /// <summary>
     /// Represents a single piece of text rendered to a screen to show a piece of information.
