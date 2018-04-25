@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using System.Collections.Generic;
 
-namespace GravityTesting
+namespace SimplePhysicsDemo
 {
     /// <summary>
     /// Used to render stats to a screen.

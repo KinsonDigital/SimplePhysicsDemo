@@ -4,7 +4,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace GravityTesting
+namespace SimplePhysicsDemo
 {
     /// <summary>
     /// Manages settings to be changed.

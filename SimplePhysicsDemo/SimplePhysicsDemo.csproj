@@ -9,8 +9,8 @@
     <ProjectGuid>{6415089A-5BF4-41B6-9503-89E086E9A37A}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>GravityTesting</RootNamespace>
-    <AssemblyName>GravityTesting</AssemblyName>
+    <RootNamespace>SimplePhysicsDemo</RootNamespace>
+    <AssemblyName>SimplePhysicsDemo</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MonoGamePlatform>Windows</MonoGamePlatform>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>

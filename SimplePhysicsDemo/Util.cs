@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 
-namespace GravityTesting
+namespace SimplePhysicsDemo
 {
     /// <summary>
     /// Provides simple untility methods.

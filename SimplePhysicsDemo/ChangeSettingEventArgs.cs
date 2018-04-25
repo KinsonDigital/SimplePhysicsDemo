@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace GravityTesting
+namespace SimplePhysicsDemo
 {
     /// <summary>
     /// Represents the data of a change setting event.
