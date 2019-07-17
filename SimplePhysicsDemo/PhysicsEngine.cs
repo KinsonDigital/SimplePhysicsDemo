@@ -25,6 +25,8 @@ namespace SimplePhysicsDemo
 
         private void UpdatePhysics(GameTime gameTime)
         {
+            var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
             foreach (var obj in _world.GameObjects)
             {
                 var allForces = new Vector2();//Total forces.  Gravity + air/fluid drag + etc....
@@ -42,7 +44,7 @@ namespace SimplePhysicsDemo
                     3. Multiplying _velocityY * _velocityY is the same thing as _velocity^2 which is in the well known equation in the link below
                 */
                 http://www.softschools.com/formulas/physics/air_resistance_formula/85/
-                allForces += Util.CalculateDragForceOnObject(_world.Density, obj.Drag, obj.SurfaceArea, obj.Velocity);
+                allForces += Util.CalculateDragForceOnObject(_world.AirFluidDensity, obj.Drag, obj.SurfaceArea, obj.Velocity);
 
                 //Clamp the total forces
                 allForces = Util.Clamp(allForces, -10f, 10f);
@@ -54,7 +56,7 @@ namespace SimplePhysicsDemo
                  * Refer to C++ code sample and the velocity_verlet() function
                  *      https://leios.gitbooks.io/algorithm-archive/content/chapters/physics_solvers/verlet/verlet.html
                 */
-                var predictedDelta = Util.IntegrateVelocityVerlet(obj.Velocity, (float)gameTime.ElapsedGameTime.TotalSeconds, obj.Acceleration);
+                var predictedDelta = Util.IntegrateVelocityVerlet(obj.Velocity, dt, obj.Acceleration);
 
                 // The following calculation converts the unit of measure from cm per pixel to meters per pixel
                 obj.Position += predictedDelta * 100f;
@@ -67,9 +69,33 @@ namespace SimplePhysicsDemo
 
                 var averageAcceleration = Util.Average(new[] { newAcceleration, obj.Acceleration });
 
-                obj.Velocity += averageAcceleration * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                obj.Velocity += averageAcceleration * dt;
 
                 obj.Velocity = Util.Clamp(obj.Velocity, -2f, 2f);
+
+                ////Angular Physics Below////////////////////////////
+
+                //Calculate torque
+
+                //Example: velocity * dt + (0.5f * acceleration * Square(dt));
+
+                var dragForce = -1 * ((_world.AirFluidDensity * obj.Drag * obj.SurfaceArea) / 2.0f) * obj.AngularVelocity;
+
+                var r = (obj.Position - new Vector2(obj.Width / 2, obj.Height / 2)).Length();
+
+                obj.AngularAcceleration = 0.1f;
+
+                var torque = r * obj.AngularForce;
+                var momentOfInertia = 1f;
+
+                obj.AngularVelocity += torque * (1.0f / momentOfInertia) * dt;
+                obj.Angle += obj.AngularVelocity * dt;
+
+                //Calculate the new angular velocity
+                var newAngAcceleration = dragForce / obj.Mass;
+                var averageAngAcceleration = (newAngAcceleration + obj.AngularAcceleration) / 2;
+
+                obj.AngularVelocity += averageAngAcceleration * dt;
             }
         }
 
@@ -80,6 +106,18 @@ namespace SimplePhysicsDemo
         {
             foreach (var obj in _world.GameObjects)
             {
+                foreach(var vert in obj.WorldVertices)
+                {
+                    //If the current vert is past the bottom edge of the screen
+                    if(vert.Y >= _world.Height)
+                    {
+                        var stop = true;
+                    }
+                }
+            }
+
+
+            /*
                 //Let's do very simple collision detection for the left of the screen
                 if (obj.Position.X < 0 && obj.Velocity.X < 0)
                 {
@@ -123,7 +161,7 @@ namespace SimplePhysicsDemo
                     //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
                     obj.SetPosition(obj.Position.X, _world.Height - (obj.Radius * 2));
                 }
-            }
+             */
         }
     }
 }

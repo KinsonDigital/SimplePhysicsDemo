@@ -19,6 +19,8 @@ namespace SimplePhysicsDemo
         private ScreenStats _screenStats;
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
+        private KeyboardState _currentKeyboardState;
+        private KeyboardState _prevKeyboardState;
 
         private World _world;
         private PhysicsEngine _physics = new PhysicsEngine();
@@ -48,34 +50,31 @@ namespace SimplePhysicsDemo
         /// </summary>
         protected override void Initialize()
         {
-            var orangeBox = new GameObject()
+            var orangeVerts = new Vector2[4];
+            orangeVerts[0] = new Vector2(-50, -50);
+            orangeVerts[1] = new Vector2(50, -50);
+            orangeVerts[2] = new Vector2(50, 50);
+            orangeVerts[3] = new Vector2(-50, 50);
+
+            var orangeBox = new RectObject(orangeVerts, new Vector2(250, 300))
             {
                 Name = "OrangeBox",
-                Position = new Vector2(250, 200),
                 Velocity = Vector2.Zero,
                 Radius = 50f,
-                Mass = 0.1f
-            };
-
-            var purpleBox = new GameObject()
-            {
-                Name = "PurpleBox",
-                Position = new Vector2(450, 200),
-                Velocity = Vector2.Zero,
-                Radius = 100f,
-                Mass = 0.1f
+                Mass = 0.1f,
+                Drag = 1f
             };
 
             orangeBox.SurfaceArea = (float)Math.PI * orangeBox.Radius * orangeBox.Radius / 50000f;
-            purpleBox.SurfaceArea = (float)Math.PI * purpleBox.Radius * purpleBox.Radius / 50000f;
 
             _world = new World()
             {
-                Gravity = Vector2.Zero
+                Gravity = Vector2.Zero,
+                AirFluidDensity = 10f
             };
 
             _world.AddGameObject(orangeBox);
-            _world.AddGameObject(purpleBox);
+            //_world.AddGameObject(purpleBox);
 
             _physics.SetWorld(_world);
 
@@ -96,7 +95,8 @@ namespace SimplePhysicsDemo
             AddSettings();
 
             //Create screen stats
-            CreateScreenStats();
+            CreateLinearScreenStats();
+            CreateAngularScreenStats();
 
             base.Initialize();
         }
@@ -128,11 +128,27 @@ namespace SimplePhysicsDemo
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
+            _currentKeyboardState = Keyboard.GetState();
+
+            //Change the angle of the object
+            if (_currentKeyboardState.IsKeyDown(Keys.D) && _prevKeyboardState.IsKeyUp(Keys.D))
+            {
+                _world.GetGameObject("OrangeBox").AngularForce = .3f;
+            }
+
+            if (_currentKeyboardState.IsKeyUp(Keys.D))
+            {
+                _world.GetGameObject("OrangeBox").AngularForce = 0f;
+            }
+
             _physics.Update(gameTime);
 
-            UpdateStats();
+            UpdateLinearStats();
+            UpdateAngularStats();
 
             _settingsManager.Update(gameTime);
+
+            _prevKeyboardState = _currentKeyboardState;
 
             base.Update(gameTime);
         }
@@ -141,7 +157,7 @@ namespace SimplePhysicsDemo
         /// <summary>
         /// Updates the stat values on the screen.
         /// </summary>
-        private void UpdateStats()
+        private void UpdateLinearStats()
         {
             var box = _world.GetGameObject("OrangeBox");
 
@@ -151,9 +167,20 @@ namespace SimplePhysicsDemo
 
             _screenStats.UpdateStat("Gravity", $"X: {Math.Round(_world.Gravity.X, 2)} , Y:{Math.Round(_world.Gravity.Y, 2)}");
             _screenStats.UpdateStat("Velocity", $"X: {velX} , Y:{velY}");
-            _screenStats.UpdateStat("Bounciness", $"{box.Restitution}");
-            _screenStats.UpdateStat("Drag", $"{box.Drag}");
-            _screenStats.UpdateStat("FluidDensity", $"{_world.Density}");
+            _screenStats.UpdateStat("Bounciness", box.Restitution.ToString());
+            _screenStats.UpdateStat("Drag", box.Drag.ToString());
+            _screenStats.UpdateStat("FluidDensity", _world.AirFluidDensity.ToString());
+            _screenStats.UpdateStat("Angle", box.Angle.ToString());
+            _screenStats.UpdateStat("Position", $"X: {box.Position.X.ToString()} Y: {box.Position.Y}");
+        }
+
+
+        private void UpdateAngularStats()
+        {
+            var box = _world.GetGameObject("OrangeBox");
+
+            _screenStats.UpdateStat("AngularVelocity", Math.Round(box.AngularVelocity, 2).ToString());
+            _screenStats.UpdateStat("AngularForce", box.AngularForce.ToString());
         }
 
 
@@ -171,7 +198,10 @@ namespace SimplePhysicsDemo
             {
                 var color = obj.Name == "OrangeBox" ? Color.DarkOrange : Color.MediumPurple;
 
-                _spriteBatch.FillRectangle(obj.Position, new Vector2(obj.Width, obj.Height), color);
+                foreach (var side in obj.Sides)
+                {
+                    _spriteBatch.DrawLine(side.Start, side.Stop, Color.Black);
+                }
             }
 
             _screenStats.Draw(_spriteBatch);
@@ -328,7 +358,7 @@ namespace SimplePhysicsDemo
                     ChangeAmount = 1f,
                     ChangeAction = (float amount) =>
                     {
-                        _world.Density = (float)Math.Round(_world.Density + amount, 2);
+                        _world.AirFluidDensity = (float)Math.Round(_world.AirFluidDensity + amount, 2);
                     }
                 },
                 new Setting()
@@ -338,7 +368,7 @@ namespace SimplePhysicsDemo
                     ChangeAmount = 1f,
                     ChangeAction = (float amount) =>
                     {
-                        _world.Density = (float)Math.Round(_world.Density - amount, 2);
+                        _world.AirFluidDensity = (float)Math.Round(_world.AirFluidDensity - amount, 2);
                     }
                 }
             };
@@ -350,7 +380,7 @@ namespace SimplePhysicsDemo
         /// <summary>
         /// Creates all of the screen stats to be shown on the screen.
         /// </summary>
-        private void CreateScreenStats()
+        private void CreateLinearScreenStats()
         {
             _screenStats = new ScreenStats(Content);
 
@@ -390,6 +420,22 @@ namespace SimplePhysicsDemo
 
             _screenStats.AddStatText(new StatText()
             {
+                Name = "Angle",
+                Text = "N/A",
+                Forecolor = Color.Black,
+                Position = new Vector2(0, _world.Height - 75)
+            });
+
+            _screenStats.AddStatText(new StatText()
+            {
+                Name = "Position",
+                Text = "X: 0, Y: 0",
+                Forecolor = Color.Black,
+                Position = new Vector2(0, _world.Height - 50)
+            });
+
+            _screenStats.AddStatText(new StatText()
+            {
                 Name = "Velocity",
                 Text = "X: 0, Y: 0",
                 Forecolor = Color.Black,
@@ -397,57 +443,23 @@ namespace SimplePhysicsDemo
             });
         }
 
-
-        /// <summary>
-        /// Checks collision with the edges of the screen.
-        /// </summary>
-        private void CheckCollision()
+        private void CreateAngularScreenStats()
         {
-            var box = _world.GetGameObject("Box");
-
-            //Let's do very simple collision detection for the left of the screen
-            if (box.Position.X < 0 && box.Velocity.X < 0)
+            _screenStats.AddStatText(new StatText()
             {
-                // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
-                box.SetVelocity(box.Velocity.X * box.Restitution, box.Velocity.Y);
+                Name = "AngularVelocity",
+                Text = "N/A",
+                Forecolor = Color.Black,
+                Position = new Vector2(_world.Width - 200, _world.Height - 25)
+            });
 
-                // Move the ball back a little bit so it's not still "stuck" in the wall
-                //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                box.SetPosition(0, box.Position.Y);
-            }
-
-            //Let's do very simple collision detection for the right of the screen
-            if (box.Position.X + (box.Radius * 2) > _world.Width && box.Velocity.X > 0)
+            _screenStats.AddStatText(new StatText()
             {
-                // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
-                box.SetVelocity(box.Velocity.X * box.Restitution, box.Velocity.Y);
-
-                // Move the ball back a little bit so it's not still "stuck" in the wall
-                //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                box.SetPosition(_world.Width - (box.Radius * 2), box.Position.Y);
-            }
-
-            //Let's do very simple collision detection for the top of the screen
-            if (box.Position.Y < 0 && box.Velocity.Y < 0)
-            {
-                // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
-                box.SetVelocity(box.Velocity.X, box.Velocity.Y * box.Restitution);
-
-                // Move the ball back a little bit so it's not still "stuck" in the wall
-                //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                box.SetPosition(box.Position.X, box.Position.Y);
-            }
-
-            //Let's do very simple collision detection for the bottom of the screen
-            if (box.Position.Y + (box.Radius * 2) > _world.Height && box.Velocity.Y > 0)
-            {
-                // This is a simplification of impulse-momentum collision response. e should be a negative number, which will change the velocity's direction
-                box.SetVelocity(box.Velocity.X, box.Velocity.Y * box.Restitution);
-
-                // Move the ball back a little bit so it's not still "stuck" in the wall
-                //This is just for this demo.  This simulates a collision response to separate the ball from the wall.
-                box.SetPosition(box.Position.X, _world.Height - (box.Radius * 2));
-            }
+                Name = "AngularForce",
+                Text = "N/A",
+                Forecolor = Color.Black,
+                Position = new Vector2(_world.Width - 200, _world.Height - 50)
+            });
         }
         #endregion
     }

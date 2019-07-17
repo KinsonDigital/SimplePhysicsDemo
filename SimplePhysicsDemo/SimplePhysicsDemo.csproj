@@ -42,7 +42,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="ChangeSettingEventArgs.cs" />
-    <Compile Include="GameObject.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="RectObject.cs" />
+    <Compile Include="Line.cs" />
     <Compile Include="Main.cs" />
     <Compile Include="PhysicsEngine.cs" />
     <Compile Include="Primitives2D.cs" />

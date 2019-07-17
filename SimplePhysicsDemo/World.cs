@@ -8,13 +8,13 @@ using System.Threading.Tasks;
 namespace SimplePhysicsDemo
 {
     /// <summary>
-    /// Represents a game world of <see cref="GameObject"/>s with physics with the world having gravity, air/fluid density, and size.
+    /// Represents a game world of <see cref="RectObject"/>s with physics with the world having gravity, air/fluid density, and size.
     /// </summary>
     public class World
     {
-        private List<GameObject> _gameObjects = new List<GameObject>();
+        private List<RectObject> _gameObjects = new List<RectObject>();
 
-        public List<GameObject> GameObjects => _gameObjects;
+        public List<RectObject> GameObjects => _gameObjects;
 
         /// <summary>
         /// This is the amount(constant) of gravitational pull that earth has.
@@ -26,7 +26,7 @@ namespace SimplePhysicsDemo
         /// <summary>
         /// Density of air/fluid. Try 1000 for water.
         /// </summary>
-        public float Density { get; set; }
+        public float AirFluidDensity { get; set; }
 
         public int Width { get; set; }
 
@@ -37,12 +37,12 @@ namespace SimplePhysicsDemo
             Gravity = new Vector2(x, y);
         }
 
-        public void AddGameObject(GameObject obj)
+        public void AddGameObject(RectObject obj)
         {
             _gameObjects.Add(obj);
         }
 
-        public GameObject GetGameObject(string name)
+        public RectObject GetGameObject(string name)
         {
             for (int i = 0; i < _gameObjects.Count; i++)
             {

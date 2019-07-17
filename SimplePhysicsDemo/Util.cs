@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using System;
 
 namespace SimplePhysicsDemo
 {
@@ -90,6 +91,135 @@ namespace SimplePhysicsDemo
 
             return new Vector2(sum.X / values.Length, sum.Y / values.Length);
         }
+
+        public static float ToRadians(float degrees)
+        {
+            return degrees * 3.1415926535897931f / 180f;
+        }
+
+        /// <summary>
+        /// Converts the given radians to degrees.
+        /// </summary>
+        /// <param name="radians">The radians to convert.</param>
+        /// <returns></returns>
+        public static float ToDegrees(float radians)
+        {
+            return radians * 180.0f / 3.1415926535897931f;
+        }
+
+
+        public static Vector2 RotateAround(Vector2 vector, Vector2 origin, float angle, bool clockWise = true)
+        {
+            //if (angle < 0)
+            //    throw new ArgumentOutOfRangeException(nameof(angle), "The angle must be a positive number.");
+
+            angle = clockWise ? angle : angle * -1;
+
+            var radians = ToRadians(angle);
+
+            var cos = (float)Math.Cos(radians);
+            var sin = (float)Math.Sin(radians);
+
+            var dx = vector.X - origin.X;//The delta x
+            var dy = vector.Y - origin.Y;//The delta y
+
+            var tempX = dx * cos - dy * sin;
+            var tempY = dx * sin + dy * cos;
+
+            var x = tempX + origin.X;
+            var y = tempY + origin.Y;
+
+            return new Vector2(x, y);
+        }
+
+
+        /// <summary>
+        /// Converts the given local <paramref name="localVertices"/> to world vertices based on the given <paramref name="origin"/>.
+        /// </summary>
+        /// <param name="localVertices">The local vertices to translate to world vertices.</param>
+        /// <param name="origin">The origin to base the translation from.</param>
+        /// <returns></returns>
+        public static Vector2[] ConvertToWorldVertices(Vector2[] localVertices, Vector2 origin)
+        {
+            var worldVertices = new Vector2[localVertices.Length];
+
+            for (int i = 0; i < localVertices.Length; i++)
+            {
+                worldVertices[i] = origin + localVertices[i];
+            }
+
+            return worldVertices;
+        }
+
+
+        /// <summary>
+        /// Scales the length of the given <paramref name="line"/> by the given <paramref name="scale"/> amount.
+        /// </summary>
+        /// <param name="line">The line to to scale.</param>
+        /// <param name="scale">The amount to scale the line as a percentage. 1 is 100% normal size.</param>
+        /// <returns></returns>
+        public static Line Scale(Line line, float scale)
+        {
+            line.Start *= scale;
+            line.Stop *= scale;
+
+            return line;
+        }
+
+        /// <summary>
+        /// Scales the given <paramref name="lines"/> by the given <paramref name="scale"/> amount.
+        /// </summary>
+        /// <param name="lines">The <see cref="Line"/>s to scale by the given <paramref name="scale"/>.</param>
+        /// <param name="scale">The amount to scale the line as a percentage. 1 is 100% normal size.</param>
+        /// <returns></returns>
+        public static Line[] Scale(Line[] lines, float scale)
+        {
+            for (int i = 0; i < lines.Length; i++)
+            {
+                lines[i] = Scale(lines[i], scale);
+            }
+
+            return lines;
+        }
+
+
+        /// <summary>
+        /// Converts the given list of <paramref name="lines"/> to an array of <see cref="Vector"/>s.
+        /// </summary>
+        /// <param name="lines">The list of <see cref="Line"/>s to convert.</param>
+        /// <returns></returns>
+        public static Vector2[] ToVertices(this Line[] lines)
+        {
+            var result = new Vector2[lines.Length];
+
+            for (int i = 0; i < lines.Length; i++)
+            {
+                result[i] = lines[i].Start;
+            }
+
+            return result;
+        }
+
+
+        /// <summary>
+        /// Calculates the centroid of the given <see cref="Vector"/>s that make up a polygon.
+        /// </summary>
+        /// <param name="vertices">The list of <see cref="Vector"/>s of a polygon.</param>
+        /// <returns></returns>
+        public static Vector2 CalculateCentroid(Vector2[] vertices)
+        {
+            var sumX = 0f;
+            var sumY = 0f;
+
+            for (int i = 0; i < vertices.Length; i++)
+            {
+                sumX += vertices[i].X;
+                sumY += vertices[i].Y;
+            }
+
+            return new Vector2(sumX / vertices.Length, sumY / vertices.Length);
+        }
+
 
 
         /// <summary>
